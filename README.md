@@ -39,7 +39,7 @@ Aşağıdaki linki, kullandığınız DNS engelleyicinin "Filtre Listeleri" veya
 
 ### Listenin İçeriği ve Güncelliği
 
-* **Kaynak:** [USOM Zararlı Bağlantılar](https://www.usom.gov.tr/zararli-baglantilar)
+* **Kaynak:** [USOM Zararlı Bağlantılar](https://www.usom.gov.tr/url-list.txt)
 * **Format:** AdGuard DNS `||domain.com^`
 * **Güncelleme Sıklığı:** Her Pazartesi sabahı (UTC 05:00) otomatik olarak güncellenir.
 * **Otomasyon:** Süreç, [GitHub Actions](https://github.com/rcelebi7/USOM-AdGuard-DNS/actions) ile tamamen otomatiktir.
@@ -77,7 +77,7 @@ Simply add the URL below to the "Filter Lists" or "Blocklists" section of your p
 
 ### List Content and Update Frequency
 
-* **Source:** [USOM Malicious Links](https://www.usom.gov.tr/zararli-baglantilar)
+* **Source:** [USOM Malicious Links](https://www.usom.gov.tr/url-list.txt)
 * **Format:** AdGuard DNS `||domain.com^`
 * **Update Frequency:** Automatically updated every Monday morning (05:00 UTC).
 * **Automation:** The process is fully automated using [GitHub Actions](https://github.com/rcelebi7/USOM-AdGuard-DNS/actions).
