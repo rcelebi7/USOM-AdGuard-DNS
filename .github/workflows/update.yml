@@ -5,7 +5,7 @@ name: Update USOM Blocklist
 on:
   # Test için her 5 dakikada bir çalıştır
   schedule:
-    - cron: '*/5 * * * *'
+    - cron: '0 5 * * *'
   
   # Ayrıca, GitHub arayüzünden manuel olarak da çalıştırabilmek için
   workflow_dispatch:
