@@ -3,7 +3,7 @@ name: Update USOM Blocklist
 
 # Bu iş akışını ne zaman çalıştıracağımızı belirler
 on:
-  # Her Pazartesi sabaha karşı 05:00 UTC'de (Türkiye saati ile 08:00) otomatik çalıştır
+  # Her gün sabaha karşı 05:00 UTC'de (Türkiye saati ile 08:00) otomatik çalıştır
   schedule:
     - cron: '0 5 * * *'
   
