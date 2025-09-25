@@ -2,15 +2,11 @@ import requests
 import datetime
 import os
 
-# --- AYARLAR ---
-# USOM'un yayınladığı güncel listenin URL'si
 USOM_URL = "https://www.usom.gov.tr/url-list.txt"
 
-# Oluşturulacak dosyanın adı
 OUTPUT_FILENAME = "USOM-AdGuard-DNS.txt"
 
 def download_list():
-    """USOM'dan ham domain listesini indirir."""
     print(f"'{USOM_URL}' adresinden liste indiriliyor...")
     try:
         response = requests.get(USOM_URL, timeout=30)
@@ -22,10 +18,6 @@ def download_list():
         raise SystemExit(e)
 
 def convert_to_adguard(lines):
-    """
-    Ham domain listesini AdGuard formatına çevirir ve
-    profesyonel bir başlık ekler.
-    """
     print("Liste AdGuard formatına çevriliyor...")
     domains_to_block = []
     for line in lines:
@@ -59,7 +51,6 @@ def convert_to_adguard(lines):
     return full_content
 
 def save_list(content):
-    """Oluşturulan listeyi dosyaya yazar."""
     with open(OUTPUT_FILENAME, "w", encoding="utf-8") as f:
         f.write(content)
     print(f"Liste başarıyla '{OUTPUT_FILENAME}' dosyasına kaydedildi.")
