@@ -1,53 +1,37 @@
-# GitHub Actions İş Akışının Adı
 name: Update USOM Blocklist
 
-# Bu iş akışını ne zaman çalıştıracağımızı belirler
 on:
-  # Test için her 5 dakikada bir çalıştır
   schedule:
-    - cron: '0 5 * * *'
+    - cron: '0 */3 * * *'
   
-  # Ayrıca, GitHub arayüzünden manuel olarak da çalıştırabilmek için
   workflow_dispatch:
 
-# Yapılacak işleri tanımlar
 jobs:
   build-list:
-    # Çalıştırılacak sanal makineyi belirler (Ubuntu'nun son sürümü)
     runs-on: ubuntu-latest
 
-    # İş adımlarını sıralar
     steps:
-      # 1. Adım: Depodaki kodları sanal makineye indirir
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2. Adım: Python ortamını kurar
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
 
-      # 3. Adım: Gerekli Python kütüphanesini (requests) yükler
       - name: Install dependencies
         run: pip install requests
 
-      # 4. Adım: Bizim yazdığımız Python betiğini çalıştırır
       - name: Run the update script
         run: python update_list.py
 
-      # 5. Adım: Eğer dosyada değişiklik varsa, değişikliği depoya kaydeder (commit) ve gönderir (push)
       - name: Commit and push if changed
         run: |
-          # Git'i yapılandır
           git config --global user.name "GitHub Actions Bot"
           git config --global user.email "actions@github.com"
           
-          # Değişiklikleri ekle
           git add USOM-AdGuard-DNS.txt
           
-          # Sadece gerçekten bir değişiklik varsa commit at
           git diff --staged --quiet || git commit -m "Update USOM list - $(date -u +'%Y-%m-%d %H:%M:%S UTC')"
           
-          # Değişiklikleri ana dala (main branch) gönder
           git push
