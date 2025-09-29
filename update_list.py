@@ -11,15 +11,19 @@ def download_list():
 
     session = requests.Session()
     retry_strategy = Retry(
-        total=3,
+        total=5,
         status_forcelist=[500, 502, 503, 504],
         backoff_factor=1
     )
     adapter = HTTPAdapter(max_retries=retry_strategy)
     session.mount('https://', adapter)
 
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+    }
+
     try:
-        response = session.get(USOM_URL, timeout=60)
+        response = session.get(USOM_URL, timeout=60, headers=headers)
         response.raise_for_status()
         print("Liste başarıyla indirildi.")
         return response.text.splitlines()
