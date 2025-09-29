@@ -1,20 +1,30 @@
 import requests
 import datetime
-import os
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
 USOM_URL = "https://www.usom.gov.tr/url-list.txt"
-
 OUTPUT_FILENAME = "USOM-AdGuard-DNS.txt"
 
 def download_list():
     print(f"'{USOM_URL}' adresinden liste indiriliyor...")
+
+    session = requests.Session()
+    retry_strategy = Retry(
+        total=3,
+        status_forcelist=[500, 502, 503, 504],
+        backoff_factor=1
+    )
+    adapter = HTTPAdapter(max_retries=retry_strategy)
+    session.mount('https://', adapter)
+
     try:
-        response = requests.get(USOM_URL, timeout=30)
+        response = session.get(USOM_URL, timeout=60)
         response.raise_for_status()
         print("Liste başarıyla indirildi.")
         return response.text.splitlines()
     except requests.exceptions.RequestException as e:
-        print(f"HATA: Liste indirilemedi. Hata: {e}")
+        print(f"HATA: Liste birden çok denemeye rağmen indirilemedi. Hata: {e}")
         raise SystemExit(e)
 
 def convert_to_adguard(lines):
