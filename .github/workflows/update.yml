@@ -2,9 +2,9 @@ name: Update USOM Blocklist
 
 on:
   schedule:
-    - cron: '0 */3 * * *'
+    - cron: '0 */3 * * *'  # Her 3 saatte bir
   
-  workflow_dispatch:
+  workflow_dispatch:  # Manuel tetikleme
 
 permissions:
   contents: write
@@ -12,21 +12,33 @@ permissions:
 jobs:
   build-list:
     runs-on: ubuntu-latest
+    timeout-minutes: 15  # İş 15 dakikada bitmezse iptal et
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5  # v4 -> v5 güncellendi
         with:
-          python-version: '3.11'
+          python-version: '3.12'  # 3.11 -> 3.12 güncellendi
 
       - name: Install dependencies
-        run: pip install requests
+        run: |
+          pip install --upgrade pip
+          pip install requests urllib3
 
       - name: Run the update script
         run: python update_list.py
+        continue-on-error: false  # Hata olursa workflow fail olsun
+
+      - name: Verify output file exists
+        run: |
+          if [ ! -f "USOM-AdGuard-DNS.txt" ]; then
+            echo "ERROR: Output file not created!"
+            exit 1
+          fi
+          echo "Output file size: $(wc -l < USOM-AdGuard-DNS.txt) lines"
 
       - name: Commit and push if changed
         run: |
@@ -36,8 +48,10 @@ jobs:
           git add USOM-AdGuard-DNS.txt
           
           if ! git diff --staged --quiet; then
-            git commit -m "Update USOM list - $(date -u +'%Y-%m-%d %H:%M:%S UTC')"
+            ENTRY_COUNT=$(grep -c "^||" USOM-AdGuard-DNS.txt || echo "0")
+            git commit -m "Update USOM list - $(date -u +'%Y-%m-%d %H:%M:%S UTC') - ${ENTRY_COUNT} entries"
             git push
+            echo "✓ Liste güncellendi: ${ENTRY_COUNT} domain"
           else
             echo "No changes to commit."
           fi
