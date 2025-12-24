@@ -12,21 +12,29 @@ def download_list():
     session = requests.Session()
     retry_strategy = Retry(
         total=5,
-        status_forcelist=[500, 502, 503, 504],
-        backoff_factor=1
+        status_forcelist=[429, 500, 502, 503, 504],  # 429 (rate limit) eklendi
+        allowed_methods=["GET"],  # method_whitelist yerine allowed_methods (yeni API)
+        backoff_factor=2  # 1'den 2'ye çıkardım (2, 4, 8, 16, 32 saniye bekler)
     )
     adapter = HTTPAdapter(max_retries=retry_strategy)
     session.mount('https://', adapter)
+    session.mount('http://', adapter)  # HTTP için de ekledim
 
     headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Accept": "text/plain, */*",
+        "Accept-Encoding": "gzip, deflate",
+        "Connection": "keep-alive"
     }
 
     try:
-        response = session.get(USOM_URL, timeout=60, headers=headers)
+        response = session.get(USOM_URL, timeout=300, headers=headers)  # 300 saniye = 5 dakika
         response.raise_for_status()
-        print("Liste başarıyla indirildi.")
+        print(f"Liste başarıyla indirildi. ({len(response.text.splitlines())} satır)")
         return response.text.splitlines()
+    except requests.exceptions.Timeout:
+        print(f"HATA: 5 dakikalık timeout süresi doldu. USOM sunucusu yanıt vermiyor.")
+        raise SystemExit("Timeout error")
     except requests.exceptions.RequestException as e:
         print(f"HATA: Liste birden çok denemeye rağmen indirilemedi. Hata: {e}")
         raise SystemExit(e)
@@ -34,10 +42,23 @@ def download_list():
 def convert_to_adguard(lines):
     print("Liste AdGuard formatına çevriliyor...")
     domains_to_block = []
+    skipped = 0
+    
     for line in lines:
         domain = line.strip()
-        if domain and not domain.startswith(('#', '!')):
-            domains_to_block.append(f"||{domain}^")
+        if not domain or domain.startswith(('#', '!')):
+            skipped += 1
+            continue
+        
+        # Boş veya geçersiz domain kontrolü
+        if len(domain) < 3 or ' ' in domain:
+            skipped += 1
+            continue
+            
+        domains_to_block.append(f"||{domain}^")
+    
+    if skipped > 0:
+        print(f"{skipped} geçersiz/yorum satırı atlandı.")
             
     domain_count = len(domains_to_block)
     
@@ -65,12 +86,20 @@ def convert_to_adguard(lines):
     return full_content
 
 def save_list(content):
-    with open(OUTPUT_FILENAME, "w", encoding="utf-8") as f:
-        f.write(content)
-    print(f"Liste başarıyla '{OUTPUT_FILENAME}' dosyasına kaydedildi.")
+    try:
+        with open(OUTPUT_FILENAME, "w", encoding="utf-8") as f:
+            f.write(content)
+        print(f"Liste başarıyla '{OUTPUT_FILENAME}' dosyasına kaydedildi.")
+    except IOError as e:
+        print(f"HATA: Dosya kaydedilemedi. Hata: {e}")
+        raise SystemExit(e)
 
 if __name__ == "__main__":
-    raw_lines = download_list()
-    adguard_list_content = convert_to_adguard(raw_lines)
-    save_list(adguard_list_content)
-    print("İşlem tamamlandı.")
+    try:
+        raw_lines = download_list()
+        adguard_list_content = convert_to_adguard(raw_lines)
+        save_list(adguard_list_content)
+        print("İşlem tamamlandı.")
+    except SystemExit as e:
+        print(f"Program sonlandırıldı: {e}")
+        exit(1)
