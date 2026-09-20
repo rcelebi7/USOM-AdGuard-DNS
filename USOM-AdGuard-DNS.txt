@@ -4,8 +4,8 @@
 ! Source: Data is obtained from usom.gov.tr
 ! License: Not specified (Publicly available data).
 ! Expires: 7 days (Daily update recommended)
-! Last modified: 19 Sep 2026 22:48 UTC
-! Version: 2026.0919.2248
+! Last modified: 20 Sep 2026 04:26 UTC
+! Version: 2026.0920.0426
 ! Syntax: AdBlock
 ! Number of entries: 8
 !
